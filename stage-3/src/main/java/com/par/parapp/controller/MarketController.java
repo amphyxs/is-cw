@@ -79,7 +79,7 @@ public class MarketController {
                 itemBuyRequest.getItemName(), itemBuyRequest.getRarity());
         inventoryService.saveItemToCustomer(user, item);
 
-        userService.chargeBalanceCustomer(login, market.getPrice());
+        userService.chargeBalanceCustomer(login, market.getPrice(), item.getId());
         userService.replenishBalanceSeller(market.getUser().getLogin(), market.getPrice());
 
         marketService.deleteSlot(market.getId());

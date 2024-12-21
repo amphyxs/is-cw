@@ -25,16 +25,16 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("login")
-    public ResponseEntity<?> authUser(@Valid @RequestBody SignInRequest signInRequest) {
+    @PostMapping("sign-in")
+    public ResponseEntity<?> authUser(@RequestBody SignInRequest signInRequest) {
         UserDataResponse userDataResponse = authService.loginAsUser(signInRequest.getLogin(),
                 signInRequest.getPassword());
         return ResponseEntity.ok(userDataResponse);
 
     }
 
-    @PostMapping()
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+    @PostMapping("sign-up")
+    public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
 
         authService.saveUser(signUpRequest.getLogin(), signUpRequest.getPassword(),
                 signUpRequest.getEmail());

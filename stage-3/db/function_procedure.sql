@@ -1,6 +1,6 @@
-CREATE OR REPLACE FUNCTION user_login_update(login VARCHAR, new_status VARCHAR) RETURNS VOID AS $$
+CREATE OR REPLACE PROCEDURE user_login_update(login_input VARCHAR, new_status VARCHAR) AS $$
 BEGIN
-    UPDATE Users SET status = new_status, last_login_date = CURRENT_DATE WHERE login = login;
+    UPDATE users SET status = new_status, last_login_date = CURRENT_DATE WHERE login = login_input;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -13,9 +13,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION add_wallet_balance(wallet_id INTEGER, amount REAL) RETURNS VOID AS $$
+CREATE OR REPLACE PROCEDURE add_wallet_balance(user_login VARCHAR, amount DOUBLE PRECISION) AS $$
+DECLARE
+    walletid BIGINT;
 BEGIN
-    UPDATE Wallet SET balance = balance + amount WHERE id = wallet_id;
+    -- Поиск wallet_id по login
+    SELECT wallet_id INTO walletid FROM Users WHERE login = user_login;
+
+    -- Проверка на существование кошелька
+    IF walletid IS NULL THEN
+        RAISE EXCEPTION 'Wallet not found for login %', user_login;
+    END IF;
+    
+    UPDATE Wallets SET balance = balance + amount WHERE id = walletid;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -27,9 +37,9 @@ BEGIN
     END IF;
 
 
-    -- Check if user has enough balance (Assuming price is available in Store table)
-    IF (SELECT balance FROM Wallet WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login)) < 
-       (SELECT price FROM Store WHERE game_id = NEW.game_id) THEN
+    -- Check if user has enough balance (Assuming price is available in shop table)
+    IF (SELECT balance FROM Wallets WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login)) < 
+       (SELECT price FROM shop WHERE game_id = NEW.game_id) THEN
         RAISE EXCEPTION 'Insufficient funds';
     END IF;
 
@@ -46,22 +56,22 @@ EXECUTE FUNCTION library_entry_check();
 
 CREATE OR REPLACE FUNCTION unique_game_in_store() RETURNS TRIGGER AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM Store WHERE game_id = NEW.game_id) THEN
+    IF EXISTS (SELECT 1 FROM shop WHERE game_id = NEW.game_id) THEN
         RAISE EXCEPTION 'This game already exists in the store';
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger on Store table
+-- Trigger on shop table
 CREATE TRIGGER unique_game_store_trigger
-BEFORE INSERT ON Store
+BEFORE INSERT ON shop
 FOR EACH ROW
 EXECUTE FUNCTION unique_game_in_store();
 
 CREATE OR REPLACE FUNCTION unique_item_in_marketplace() RETURNS TRIGGER AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM Marketplace WHERE seller_login = NEW.seller_login AND item_id = NEW.item_id) THEN
+    IF EXISTS (SELECT 1 FROM market WHERE user_login = NEW.user_login AND item_id = NEW.item_id) THEN
         RAISE EXCEPTION 'This item is already listed by this seller in the marketplace';
     END IF;
     RETURN NEW;
@@ -69,7 +79,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER unique_item_marketplace_trigger
-BEFORE INSERT ON Marketplace
+BEFORE INSERT ON market
 FOR EACH ROW
 EXECUTE FUNCTION unique_item_in_marketplace();
 
@@ -78,8 +88,8 @@ DECLARE
     game_price REAL;
     user_balance REAL;
 BEGIN
-    SELECT price INTO game_price FROM Store WHERE game_id = NEW.game_id;
-    SELECT balance INTO user_balance FROM Wallet WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
+    SELECT price INTO game_price FROM shop WHERE game_id = NEW.game_id;
+    SELECT balance INTO user_balance FROM Wallets WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
     
     IF user_balance < game_price THEN
         RAISE EXCEPTION 'Insufficient funds to purchase this game';
@@ -98,9 +108,9 @@ CREATE OR REPLACE FUNCTION deduct_balance_after_purchase() RETURNS TRIGGER AS $$
 DECLARE
     game_price REAL;
 BEGIN
-    SELECT price INTO game_price FROM Store WHERE game_id = NEW.game_id;
+    SELECT price INTO game_price FROM shop WHERE game_id = NEW.game_id;
     
-    UPDATE Wallet
+    UPDATE Wallets
     SET balance = balance - game_price
     WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
     
@@ -117,7 +127,7 @@ CREATE OR REPLACE FUNCTION check_item_ownership_for_sale() RETURNS TRIGGER AS $$
 DECLARE
     item_quantity INTEGER;
 BEGIN
-    SELECT quantity INTO item_quantity FROM Inventory WHERE owner_login = NEW.seller_login AND item_id = NEW.item_id;
+    SELECT amount INTO item_quantity FROM Inventory WHERE user_login = NEW.user_login AND item_id = NEW.item_id;
     
     IF item_quantity IS NULL OR item_quantity < 1 THEN
         RAISE EXCEPTION 'User does not own this item or has insufficient quantity';
@@ -128,7 +138,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_ownership_before_sale
-BEFORE INSERT ON Marketplace
+BEFORE INSERT ON market
 FOR EACH ROW
 EXECUTE FUNCTION check_item_ownership_for_sale();
 
@@ -136,29 +146,54 @@ CREATE OR REPLACE FUNCTION add_balance_on_item_sale() RETURNS TRIGGER AS $$
 DECLARE
     item_price REAL;
 BEGIN
-    SELECT price INTO item_price FROM Marketplace WHERE id = OLD.id;
+    SELECT price INTO item_price FROM market WHERE id = OLD.id;
     
-    UPDATE Wallet
+    UPDATE Wallets
     SET balance = balance + item_price
-    WHERE id = (SELECT wallet_id FROM Users WHERE login = OLD.seller_login);
+    WHERE id = (SELECT wallet_id FROM Users WHERE login = OLD.user_login);
     
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_wallet_balance_on_sale
-AFTER DELETE ON Marketplace
+AFTER DELETE ON market
 FOR EACH ROW
 EXECUTE FUNCTION add_balance_on_item_sale();
 
+CREATE OR REPLACE PROCEDURE chargebalanceForSoldItem(arg_login varchar, arg_balance double precision, item_id bigint)
+AS
+$$
+DECLARE
+    wallet_id_to_change integer;
+BEGIN
+
+    IF (SELECT users.login FROM users WHERE users.login = arg_login) IS NOT NULL
+    THEN
+        wallet_id_to_change = (SELECT users.wallet_id FROM users WHERE users.login = arg_login);
+        UPDATE wallets
+        SET balance= ((SELECT balance
+                       FROM wallets
+                       WHERE wallets.id = wallet_id_to_change) - arg_balance)
+        WHERE wallets.id = wallet_id_to_change;
+
+        INSERT INTO transactions(user_login, payment_method, amount, transaction_date, transaction_status, item_id)
+        VALUES (arg_login, 'balance', arg_balance, current_timestamp, 'success', item_id);
+    ELSE
+        RAISE EXCEPTION 'Данный пользователь не зарегистрирован';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION update_last_played_date() RETURNS TRIGGER AS $$
 BEGIN
-    NEW.last_played_date := CURRENT_DATE;
+    NEW.last_run_date := CURRENT_DATE;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_last_played_date_trigger
-BEFORE UPDATE OF last_played_date ON Library
+BEFORE UPDATE OF last_run_date ON Library
 FOR EACH ROW
 EXECUTE FUNCTION update_last_played_date();

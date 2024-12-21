@@ -65,8 +65,8 @@ public class UserService {
         userRepository.replenishBalanceSeller(userLogin, balance);
     }
 
-    public void chargeBalanceCustomer(String userLogin, Double balance) {
-        userRepository.chargeBalanceCustomer(userLogin, balance);
+    public void chargeBalanceCustomer(String userLogin, Double balance, Long id) {
+        userRepository.chargeBalanceCustomer(userLogin, balance, id);
     }
 
     public void checkBalanceToBuyGame(User user, double marketPrice) {

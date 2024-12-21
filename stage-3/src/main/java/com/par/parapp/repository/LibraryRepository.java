@@ -33,7 +33,7 @@ public interface LibraryRepository extends JpaRepository<Library, Long> {
 
         @Transactional
         @Modifying
-        @Query(value = "UPDATE Library SET last_played_date = CURRENT_DATE WHERE user_login = :user_login AND game_id = (SELECT id FROM Games WHERE name = :game_name)", nativeQuery = true)
+        @Query(value = "UPDATE Library SET last_run_date = CURRENT_DATE WHERE user_login = :user_login AND game_id = (SELECT id FROM Games WHERE name = :game_name)", nativeQuery = true)
         void enterInGame(@Param("user_login") String userLogin, @Param("game_name") String gameName);
 
         @Query(value = "SELECT COUNT(*) FROM library WHERE library.user_login=:user_login", nativeQuery = true)

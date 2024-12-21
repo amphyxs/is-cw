@@ -1,7 +1,7 @@
 CREATE TABLE wallets
 (
     id      SERIAL PRIMARY KEY,
-    balance REAL DEFAULT 0
+    balance DOUBLE PRECISION DEFAULT 0
 );
 
 CREATE TABLE users
@@ -32,7 +32,7 @@ CREATE TABLE shop
 (
     id                 SERIAL PRIMARY KEY,
     game_id            INTEGER REFERENCES games ON DELETE CASCADE ON UPDATE CASCADE,
-    price              REAL         NOT NULL,
+    price              DOUBLE PRECISION NOT NULL,
     description        TEXT         NOT NULL,
     picture_cover      VARCHAR(256) NOT NULL,
     picture_shop       VARCHAR(256) NOT NULL,
@@ -45,12 +45,12 @@ CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_login VARCHAR(16) REFERENCES Users(login) ON DELETE SET NULL,
     payment_method VARCHAR(64),
-    amount REAL,
+    amount DOUBLE PRECISION,
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transaction_status VARCHAR(64),
-    item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
-    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
-    wallet_id INTEGER REFERENCES wallets(id) ON DELETE CASCADE,
+    item_id INTEGER REFERENCES items(id) ON DELETE CASCADE DEFAULT NULL,
+    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE DEFAULT NULL,
+    wallet_id INTEGER REFERENCES wallets(id) ON DELETE CASCADE DEFAULT NULL,
     CONSTRAINT check_item_game_wallet CHECK (
         (item_id IS NOT NULL AND game_id IS NULL AND wallet_id IS NULL) OR
         (item_id IS NULL AND game_id IS NOT NULL AND wallet_id IS NULL) OR
@@ -115,7 +115,7 @@ CREATE TABLE market
     id         SERIAL PRIMARY KEY,
     user_login VARCHAR(10) REFERENCES users ON DELETE CASCADE ON UPDATE CASCADE,
     item_id    INTEGER REFERENCES items ON DELETE CASCADE ON UPDATE CASCADE,
-    price      REAL NOT NULL
+    price      DOUBLE PRECISION NOT NULL
 );
 
 
