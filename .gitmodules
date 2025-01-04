@@ -1,0 +1,3 @@
+[submodule "stage-4/par-store"]
+	path = stage-4/par-store
+	url = https://github.com/amphyxs/is-cw-fe.git
