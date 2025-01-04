@@ -66,6 +66,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:5173"); // Local Dev Server for FE
         configuration.addAllowedOrigin("http://localhost:8080"); // Local Dev Server for FE
         configuration.addAllowedOrigin("http://localhost:4201"); // Local Nginx for FE
         configuration.addAllowedMethod("*");

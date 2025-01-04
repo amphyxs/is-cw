@@ -64,7 +64,6 @@ public class MarketController {
     }
 
     @PreAuthorize("hasRole('USER')")
-
     @PostMapping("/buy")
     public ResponseEntity<?> buyItem(@RequestBody ItemBuyRequest itemBuyRequest,
             HttpServletRequest httpServletRequest) {

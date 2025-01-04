@@ -29,6 +29,5 @@ public class DevController {
         devService.uploadGame(uploadGameRequest);
 
         return new ResponseEntity<>(new MessageResponse("Игра успешно загружена!"), HttpStatus.CREATED);
-
     }
 }

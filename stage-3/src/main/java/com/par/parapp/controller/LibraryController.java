@@ -22,9 +22,8 @@ public class LibraryController {
         this.libraryService = libraryService;
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("{gameName}")
-    public ResponseEntity<?> getGamesByName(@PathVariable String gameName,
+    @GetMapping()
+    public ResponseEntity<?> getGamesByName(@RequestParam String gameName,
             HttpServletRequest httpServletRequest) {
         String login = authService.getLoginFromToken(httpServletRequest);
 

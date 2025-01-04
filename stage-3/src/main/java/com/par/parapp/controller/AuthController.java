@@ -30,12 +30,10 @@ public class AuthController {
         UserDataResponse userDataResponse = authService.loginAsUser(signInRequest.getLogin(),
                 signInRequest.getPassword());
         return ResponseEntity.ok(userDataResponse);
-
     }
 
     @PostMapping("sign-up")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
-
         authService.saveUser(signUpRequest.getLogin(), signUpRequest.getPassword(),
                 signUpRequest.getEmail());
         return new ResponseEntity<>(new MessageResponse("Пользователь успешно зарегистрирован!"), HttpStatus.CREATED);
