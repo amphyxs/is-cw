@@ -31,11 +31,14 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
+    private Boolean isTutorialCompleted;
+
     public UserDetailsImpl(String login, String password, String status,
             String email,
             LocalDate lastLoginDate,
             LocalDate registrationDate,
-            Collection<? extends GrantedAuthority> authorities) {
+            Collection<? extends GrantedAuthority> authorities,
+            Boolean isTutorialCompleted) {
         this.login = login;
         this.password = password;
         this.status = status;
@@ -43,6 +46,7 @@ public class UserDetailsImpl implements UserDetails {
         this.lastLoginDate = lastLoginDate;
         this.registrationDate = registrationDate;
         this.authorities = authorities;
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 
     public static UserDetailsImpl build(User user) {
@@ -58,7 +62,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getLastLoginDate(),
                 user.getRegistrationDate(),
-                authorities);
+                authorities,
+                user.getIsTutorialCompleted());
     }
 
     @Override
@@ -142,5 +147,13 @@ public class UserDetailsImpl implements UserDetails {
 
     public void setRegistrationDate(LocalDate registrationDate) {
         this.registrationDate = registrationDate;
+    }
+
+    public Boolean getIsTutorialCompleted() {
+        return isTutorialCompleted;
+    }
+
+    public void setIsTutorialCompleted(Boolean isTutorialCompleted) {
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 }

@@ -105,7 +105,7 @@ public class AuthService {
 
         userRepository.loginAsUser(login);
 
-        return new UserDataResponse(jwt, userDetails.getLogin(), roles);
+        return new UserDataResponse(jwt, userDetails.getLogin(), roles, userDetails.getIsTutorialCompleted());
     }
 
 }

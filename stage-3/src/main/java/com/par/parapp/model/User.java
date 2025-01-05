@@ -23,6 +23,8 @@ public class User {
 
     private LocalDate registrationDate;
 
+    private Boolean isTutorialCompleted = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
@@ -105,6 +107,14 @@ public class User {
 
     public void setWallet(Wallet wallet) {
         this.wallet = wallet;
+    }
+
+    public Boolean getIsTutorialCompleted() {
+        return isTutorialCompleted;
+    }
+
+    public void setIsTutorialCompleted(Boolean isTutorialCompleted) {
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 
 }

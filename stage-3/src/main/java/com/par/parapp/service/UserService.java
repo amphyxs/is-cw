@@ -34,7 +34,8 @@ public class UserService {
 
         String status = getUserStatus(login);
 
-        LocalDate lastLoginDate = getUserByLogin(login).getLastLoginDate();
+        var user = getUserByLogin(login);
+        LocalDate lastLoginDate = user.getLastLoginDate();
         String lastLoginDateToSend;
         if (lastLoginDate == null)
             lastLoginDateToSend = "";
@@ -42,7 +43,7 @@ public class UserService {
             lastLoginDateToSend = lastLoginDate.toString();
 
         String registrationDate = getRegistrationDate(login).toString();
-        return new UserDataResponse(status, lastLoginDateToSend, registrationDate);
+        return new UserDataResponse(status, lastLoginDateToSend, registrationDate, user.getIsTutorialCompleted());
     }
 
     public LocalDate getRegistrationDate(String login) {
@@ -72,6 +73,10 @@ public class UserService {
     public void checkBalanceToBuyGame(User user, double marketPrice) {
         if (user.getWallet().getBalance() < marketPrice)
             throw new NotEnoughBalanceException("У вас недостаточно средств для покупки этой вещи!");
+    }
+
+    public void updateIsTutorialCompleted(String userLogin, Boolean isTutorialCompleted) {
+        userRepository.updateIsTutorialCompleted(userLogin, isTutorialCompleted);
     }
 
 }

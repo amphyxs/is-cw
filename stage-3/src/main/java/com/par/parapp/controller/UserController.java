@@ -70,4 +70,12 @@ public class UserController {
         return ResponseEntity.ok(new BalanceResponse(userService.getBalance(login)));
     }
 
+    @PatchMapping("/is-tutorial-completed")
+    public ResponseEntity<?> patchIsTutorialCompleted(@RequestBody Boolean isTutorialCompleted,
+            HttpServletRequest httpServletRequest) {
+        String login = authService.getLoginFromToken(httpServletRequest);
+        userService.updateIsTutorialCompleted(login, isTutorialCompleted);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }

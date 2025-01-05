@@ -16,20 +16,24 @@ public class UserDataResponse {
 
     private String registrationDate;
 
+    private Boolean isTutorialCompleted;
+
     private List<String> roles;
 
     private String jwt;
 
-    public UserDataResponse(String status, String lastLoginDate, String registrationDate) {
+    public UserDataResponse(String status, String lastLoginDate, String registrationDate, Boolean isTutorialCompleted) {
         this.status = status;
         this.lastLoginDate = lastLoginDate;
         this.registrationDate = registrationDate;
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 
-    public UserDataResponse(String jwt, String login, List<String> roles) {
+    public UserDataResponse(String jwt, String login, List<String> roles, Boolean isTutorialCompleted) {
         this.jwt = jwt;
         this.login = login;
         this.roles = roles;
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 
     public List<String> getRoles() {
@@ -94,5 +98,13 @@ public class UserDataResponse {
 
     public void setJwt(String jwt) {
         this.jwt = jwt;
+    }
+
+    public Boolean getIsTutorialCompleted() {
+        return isTutorialCompleted;
+    }
+
+    public void setIsTutorialCompleted(Boolean isTutorialCompleted) {
+        this.isTutorialCompleted = isTutorialCompleted;
     }
 }

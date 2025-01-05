@@ -46,4 +46,10 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query(value = "SELECT balance FROM Wallets WHERE id = (SELECT wallet_id FROM Users WHERE login = :arg_login);", nativeQuery = true)
     Double getBalance(@Param("arg_login") String login);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE users SET is_tutorial_completed = :is_tutorial_completed WHERE login = :user_login", nativeQuery = true)
+    void updateIsTutorialCompleted(@Param("user_login") String userLogin,
+            @Param("is_tutorial_completed") Boolean isTutorialCompleted);
 }
