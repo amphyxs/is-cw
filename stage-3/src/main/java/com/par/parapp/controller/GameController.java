@@ -76,6 +76,9 @@ public class GameController {
         libraryService.saveGameInUserLibrary(user, game);
 
         int status = inventoryService.saveInventory(user, game);
+
+        libraryService.transferMoneyAndBonuses(user, game, gameNameRequest.getUseBonuses());
+
         return new ResponseEntity<>(status, HttpStatus.CREATED);
     }
 

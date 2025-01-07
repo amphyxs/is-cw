@@ -12,6 +12,16 @@ public class Wallet {
 
     private Double balance;
 
+    private Double bonuses = 0.0d;
+
+    public Double getBonuses() {
+        return bonuses;
+    }
+
+    public void setBonuses(Double bonuses) {
+        this.bonuses = bonuses;
+    }
+
     public Wallet(Double balance) {
         this.balance = balance;
     }

@@ -67,7 +67,7 @@ public class UserController {
     @GetMapping("/balance")
     public ResponseEntity<?> getUserBalance(HttpServletRequest httpServletRequest) {
         String login = authService.getLoginFromToken(httpServletRequest);
-        return ResponseEntity.ok(new BalanceResponse(userService.getBalance(login)));
+        return ResponseEntity.ok(new BalanceResponse(userService.getBalance(login), userService.getBonuses(login)));
     }
 
     @PatchMapping("/is-tutorial-completed")

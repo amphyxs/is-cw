@@ -63,28 +63,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION deduct_balance_after_purchase() RETURNS TRIGGER AS $$
-DECLARE
-    game_price REAL;
-BEGIN
-    SELECT price INTO game_price FROM shop WHERE game_id = NEW.game_id;
-    
-    UPDATE Wallets
-    SET balance = balance - game_price
-    WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
-
-    INSERT INTO transactions(user_login, payment_method, amount, transaction_date, transaction_status, game_id)
-        VALUES (NEW.user_login, 'balance', game_price, current_timestamp, 'success', NEW.game_id);
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER deduct_balance_on_purchase
-AFTER INSERT ON Library
-FOR EACH ROW
-EXECUTE FUNCTION deduct_balance_after_purchase();
-
 CREATE OR REPLACE FUNCTION check_item_ownership_for_sale() RETURNS TRIGGER AS $$
 DECLARE
     item_quantity INTEGER;

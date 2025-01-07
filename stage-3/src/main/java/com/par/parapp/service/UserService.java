@@ -62,6 +62,10 @@ public class UserService {
         return userRepository.getBalance(login);
     }
 
+    public Double getBonuses(String login) {
+        return userRepository.getBonuses(login);
+    }
+
     public void replenishBalanceSeller(String userLogin, Double balance) {
         userRepository.replenishBalanceSeller(userLogin, balance);
     }

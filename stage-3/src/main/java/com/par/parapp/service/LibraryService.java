@@ -1,23 +1,32 @@
 package com.par.parapp.service;
 
-import com.par.parapp.dto.LastGamesResponse;
-import com.par.parapp.dto.LibraryDataResponse;
-import com.par.parapp.exception.ResourceNotFoundException;
-import com.par.parapp.model.*;
-import com.par.parapp.repository.GameRepository;
-import com.par.parapp.repository.LibraryRepository;
-import com.par.parapp.repository.ShopRepository;
-import com.par.parapp.repository.TransactionRepository;
-import com.par.parapp.repository.UserRepository;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+
+import com.par.parapp.dto.LastGamesResponse;
+import com.par.parapp.dto.LibraryDataResponse;
+import com.par.parapp.exception.ResourceNotFoundException;
+import com.par.parapp.model.Game;
+import com.par.parapp.model.Library;
+import com.par.parapp.model.Shop;
+import com.par.parapp.model.Transaction;
+import com.par.parapp.model.User;
+import com.par.parapp.repository.GameRepository;
+import com.par.parapp.repository.LibraryRepository;
+import com.par.parapp.repository.ShopRepository;
+import com.par.parapp.repository.TransactionRepository;
+import com.par.parapp.repository.UserRepository;
+import com.par.parapp.repository.WalletRepository;
 
 @Service
 public class LibraryService {
@@ -32,13 +41,17 @@ public class LibraryService {
 
     private final UserRepository userRepository;
 
+    private final WalletRepository walletRepository;
+
     public LibraryService(LibraryRepository libraryRepository, ShopRepository shopRepository,
-            GameRepository gameRepository, TransactionRepository transactionRepository, UserRepository userRepository) {
+            GameRepository gameRepository, TransactionRepository transactionRepository, UserRepository userRepository,
+            WalletRepository walletRepository) {
         this.libraryRepository = libraryRepository;
         this.shopRepository = shopRepository;
         this.gameRepository = gameRepository;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
+        this.walletRepository = walletRepository;
     }
 
     public void saveGameInUserLibrary(User user, Game game) {
@@ -119,11 +132,58 @@ public class LibraryService {
     public void refundGame(String buyerLogin, String gameName) {
         var gameId = gameRepository.getGameByName(gameName).get().getId();
         var gameTransaction = transactionRepository.getSuccessTransactionForBuyingGameOfUser(buyerLogin, gameId).get();
+        var bonusesTransaction = transactionRepository
+                .getSuccessTransactionForBuyingGameWithBonusesOfUser(buyerLogin, gameId).get();
         var libraryItem = libraryRepository.getAllFromLibraryByGameNameFilter(gameName, buyerLogin).get().getFirst();
+        var user = userRepository.getReferenceById(buyerLogin);
+
+        if (bonusesTransaction.getAmount() > 0) {
+            if (user.getWallet().getBonuses() < bonusesTransaction.getAmount()) {
+                throw new RuntimeException("User has spent bonuses those must be taken back");
+            }
+
+            user.getWallet().setBonuses(user.getWallet().getBonuses() - bonusesTransaction.getAmount());
+            userRepository.replenishBalance(buyerLogin, gameTransaction.getAmount());
+        } else {
+            user.getWallet().setBonuses(user.getWallet().getBonuses() + -bonusesTransaction.getAmount());
+            userRepository.replenishBalance(buyerLogin, gameTransaction.getAmount() + bonusesTransaction.getAmount());
+        }
+        walletRepository.save(user.getWallet());
 
         libraryRepository.delete(libraryItem);
-        userRepository.replenishBalance(buyerLogin, gameTransaction.getAmount());
         transactionRepository.delete(gameTransaction);
+    }
+
+    @Transactional
+    public void transferMoneyAndBonuses(User buyer, Game game, Boolean isPayingWithBonuses) {
+        Shop shopItem = shopRepository.getShopByGameName(game.getName()).get();
+
+        Double bonusesToUse;
+        Double bonusesToAdd;
+        if (Boolean.TRUE.equals(isPayingWithBonuses)) {
+            bonusesToUse = Math.min(userRepository.getBonuses(buyer.getLogin()), shopItem.getPrice());
+            bonusesToAdd = 0.0d;
+            transactionRepository
+                    .save(new Transaction(buyer, "bonuses", -bonusesToUse, new Timestamp(System.currentTimeMillis()),
+                            "success", null, game, null));
+        } else {
+            bonusesToUse = 0.0d;
+            bonusesToAdd = shopItem.getPrice() * 0.05d;
+            transactionRepository
+                    .save(new Transaction(buyer, "bonuses", bonusesToAdd, new Timestamp(System.currentTimeMillis()),
+                            "success", null, game, null));
+        }
+
+        Double initialBalance = buyer.getWallet().getBalance();
+        Double initialBonuses = buyer.getWallet().getBonuses();
+        buyer.getWallet().setBonuses(initialBonuses - bonusesToUse);
+        buyer.getWallet().setBalance(initialBalance + bonusesToUse - shopItem.getPrice());
+        transactionRepository
+                .save(new Transaction(buyer, "balance", shopItem.getPrice(), new Timestamp(System.currentTimeMillis()),
+                        "success", null, game, null));
+        buyer.getWallet().setBonuses(buyer.getWallet().getBonuses() + bonusesToAdd);
+
+        walletRepository.save(buyer.getWallet());
     }
 
 }

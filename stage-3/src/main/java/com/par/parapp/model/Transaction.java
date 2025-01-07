@@ -104,6 +104,22 @@ public class Transaction {
     @JoinColumn(name = "wallet_id", referencedColumnName = "id")
     private Wallet wallet;
 
+    public Transaction(User user, String paymentMethod, Double amount, Timestamp transactionDate,
+            String transactionStatus, Item item, Game game, Wallet wallet) {
+        this.user = user;
+        this.paymentMethod = paymentMethod;
+        this.amount = amount;
+        this.transactionDate = transactionDate;
+        this.transactionStatus = transactionStatus;
+        this.item = item;
+        this.game = game;
+        this.wallet = wallet;
+    }
+
+    public Transaction() {
+        super();
+    }
+
     public Wallet getWallet() {
         return wallet;
     }
