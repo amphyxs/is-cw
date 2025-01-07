@@ -1,16 +1,18 @@
 package com.par.parapp.service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.par.parapp.dto.SlotsResponse;
 import com.par.parapp.exception.ResourceNotFoundException;
 import com.par.parapp.model.Item;
 import com.par.parapp.model.Market;
 import com.par.parapp.model.User;
+import com.par.parapp.repository.InventoryRepository;
 import com.par.parapp.repository.MarketRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 public class MarketService {
