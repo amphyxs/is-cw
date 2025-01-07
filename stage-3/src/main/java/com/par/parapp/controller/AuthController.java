@@ -29,13 +29,19 @@ public class AuthController {
     public ResponseEntity<?> authUser(@RequestBody SignInRequest signInRequest) {
         UserDataResponse userDataResponse = authService.loginAsUser(signInRequest.getLogin(),
                 signInRequest.getPassword());
-        return ResponseEntity.ok(userDataResponse);
+        UserDataResponse response = new UserDataResponse(
+                userDataResponse.getJwt(),
+                userDataResponse.getLogin(),
+                userDataResponse.getRoles(),
+                userDataResponse.getIsTutorialCompleted()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("sign-up")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
         authService.saveUser(signUpRequest.getLogin(), signUpRequest.getPassword(),
-                signUpRequest.getEmail());
+                signUpRequest.getEmail(), signUpRequest.getIsDev());
         return new ResponseEntity<>(new MessageResponse("Пользователь успешно зарегистрирован!"), HttpStatus.CREATED);
 
     }

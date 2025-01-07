@@ -20,10 +20,13 @@ public class SignUpRequest {
     @NotBlank(message = "Укажите электронную почту!")
     private String email;
 
-    public SignUpRequest(String login, String password, String email) {
+    private Boolean isDev;
+
+    public SignUpRequest(String login, String password, String email, Boolean isDev) {
         this.login = login;
         this.password = password;
         this.email = email;
+        this.isDev = isDev;
     }
 
     public String getLogin() {
@@ -49,5 +52,7 @@ public class SignUpRequest {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public Boolean getIsDev() {return isDev;}
 
 }

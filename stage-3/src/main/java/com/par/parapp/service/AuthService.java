@@ -61,7 +61,7 @@ public class AuthService {
         return jwtUtils.getLoginFromJwtToken(authTokenFilter.parseJwt(httpServletRequest));
     }
 
-    public User saveUser(String login, String password, String email) {
+    public User saveUser(String login, String password, String email, Boolean isDev) {
 
         if (userRepository.existsByLogin(login))
             throw new ResourceAlreadyExist("Этот логин уже занят. Попробуйте другой");
@@ -76,7 +76,7 @@ public class AuthService {
         Set<Role> roles = new HashSet<>();
 
         Role userRole = roleRepository
-                .findByName(ERole.ROLE_USER)
+                .findByName(isDev ? ERole.ROLE_DEV : ERole.ROLE_USER)
                 .orElseThrow(ResourceNotFoundException::new);
         roles.add(userRole);
 

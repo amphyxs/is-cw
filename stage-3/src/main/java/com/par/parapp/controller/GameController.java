@@ -89,17 +89,4 @@ public class GameController {
      * }
      */
 
-    @GetMapping("market")
-    public ResponseEntity<?> getAllGamesForMarket(@RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
-        List<Game> allGames = gameService.getAllGames(page, size);
-        List<AllGamesMarketResponse> allGamesMarketResponses = new ArrayList<>();
-        allGames.forEach(game -> {
-            allGamesMarketResponses.add(new AllGamesMarketResponse(game.getName(),
-                    shopService.getGamePicture(game.getName())));
-        });
-        return ResponseEntity.ok(allGamesMarketResponses);
-
-    }
-
 }

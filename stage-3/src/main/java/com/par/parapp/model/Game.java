@@ -1,6 +1,9 @@
 package com.par.parapp.model;
 
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,6 +31,7 @@ public class Game {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dev_login")
+    @JsonIgnore
     private User user;
 
     private String gameUrl;
