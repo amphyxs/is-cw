@@ -69,6 +69,7 @@ public class WebSecurityConfig {
         configuration.addAllowedOrigin("http://localhost:5173"); // Local Dev Server for FE
         configuration.addAllowedOrigin("http://localhost:8080"); // Local Dev Server for FE
         configuration.addAllowedOrigin("http://localhost:4201"); // Local Nginx for FE
+        configuration.addAllowedOrigin("https://se.ifmo.ru"); // HELIOSHITTTTTTT
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
