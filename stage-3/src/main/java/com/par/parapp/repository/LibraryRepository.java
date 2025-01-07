@@ -1,6 +1,8 @@
 package com.par.parapp.repository;
 
 import com.par.parapp.model.Library;
+import com.par.parapp.model.Transaction;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

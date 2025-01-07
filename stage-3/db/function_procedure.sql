@@ -72,7 +72,10 @@ BEGIN
     UPDATE Wallets
     SET balance = balance - game_price
     WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
-    
+
+    INSERT INTO transactions(user_login, payment_method, amount, transaction_date, transaction_status, game_id)
+        VALUES (NEW.user_login, 'balance', game_price, current_timestamp, 'success', NEW.game_id);
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

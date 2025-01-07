@@ -4,8 +4,12 @@ import com.par.parapp.dto.LastGamesResponse;
 import com.par.parapp.dto.LibraryDataResponse;
 import com.par.parapp.exception.ResourceNotFoundException;
 import com.par.parapp.model.*;
+import com.par.parapp.repository.GameRepository;
 import com.par.parapp.repository.LibraryRepository;
 import com.par.parapp.repository.ShopRepository;
+import com.par.parapp.repository.TransactionRepository;
+import com.par.parapp.repository.UserRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +26,19 @@ public class LibraryService {
 
     private final ShopRepository shopRepository;
 
-    public LibraryService(LibraryRepository libraryRepository, ShopRepository shopRepository) {
+    private final GameRepository gameRepository;
+
+    private final TransactionRepository transactionRepository;
+
+    private final UserRepository userRepository;
+
+    public LibraryService(LibraryRepository libraryRepository, ShopRepository shopRepository,
+            GameRepository gameRepository, TransactionRepository transactionRepository, UserRepository userRepository) {
         this.libraryRepository = libraryRepository;
         this.shopRepository = shopRepository;
+        this.gameRepository = gameRepository;
+        this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
     }
 
     public void saveGameInUserLibrary(User user, Game game) {
@@ -100,6 +114,16 @@ public class LibraryService {
             userGames.add(library.getGame());
         });
         return userGames;
+    }
+
+    public void refundGame(String buyerLogin, String gameName) {
+        var gameId = gameRepository.getGameByName(gameName).get().getId();
+        var gameTransaction = transactionRepository.getSuccessTransactionForBuyingGameOfUser(buyerLogin, gameId).get();
+        var libraryItem = libraryRepository.getAllFromLibraryByGameNameFilter(gameName, buyerLogin).get().getFirst();
+
+        libraryRepository.delete(libraryItem);
+        userRepository.replenishBalance(buyerLogin, gameTransaction.getAmount());
+        transactionRepository.delete(gameTransaction);
     }
 
 }

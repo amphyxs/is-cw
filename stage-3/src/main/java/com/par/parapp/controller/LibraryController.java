@@ -50,4 +50,11 @@ public class LibraryController {
         return ResponseEntity.ok(libraryService.getUserLastGames(login));
     }
 
+    @PostMapping("/refund")
+    public ResponseEntity<?> refundGame(@RequestParam String gameName, HttpServletRequest httpServletRequest) {
+        String login = authService.getLoginFromToken(httpServletRequest);
+
+        libraryService.refundGame(login, gameName);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
