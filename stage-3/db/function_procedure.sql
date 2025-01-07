@@ -63,27 +63,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger on shop table
-CREATE TRIGGER unique_game_store_trigger
-BEFORE INSERT ON shop
-FOR EACH ROW
-EXECUTE FUNCTION unique_game_in_store();
-
-CREATE OR REPLACE FUNCTION unique_item_in_marketplace() RETURNS TRIGGER AS $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM market WHERE user_login = NEW.user_login AND item_id = NEW.item_id) THEN
-        RAISE EXCEPTION 'This item is already listed by this seller in the marketplace';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER unique_item_marketplace_trigger
-BEFORE INSERT ON market
-FOR EACH ROW
-EXECUTE FUNCTION unique_item_in_marketplace();
-
-
 CREATE OR REPLACE FUNCTION deduct_balance_after_purchase() RETURNS TRIGGER AS $$
 DECLARE
     game_price REAL;
@@ -124,12 +103,10 @@ EXECUTE FUNCTION check_item_ownership_for_sale();
 
 CREATE OR REPLACE FUNCTION add_balance_on_item_sale() RETURNS TRIGGER AS $$
 DECLARE
-    item_price REAL;
+    item_price double precision;
 BEGIN
-    SELECT price INTO item_price FROM market WHERE id = OLD.id;
-    
     UPDATE Wallets
-    SET balance = balance + item_price
+    SET balance = balance + OLD.price
     WHERE id = (SELECT wallet_id FROM Users WHERE login = OLD.user_login);
     
     RETURN OLD;

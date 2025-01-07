@@ -7,6 +7,8 @@ import com.par.parapp.model.Item;
 import com.par.parapp.model.Market;
 import com.par.parapp.model.User;
 import com.par.parapp.service.*;
+
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,6 +55,7 @@ public class MarketController {
         Item item = itemService.getItemByGameNameItemNameAndRarity(game, itemSellRequest.getItemName(),
                 itemSellRequest.getRarity());
         marketService.save(user, item, itemSellRequest.getPrice());
+        inventoryService.removeItemFromSeller(user, item);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -79,7 +82,6 @@ public class MarketController {
         inventoryService.saveItemToCustomer(user, item);
 
         userService.chargeBalanceCustomer(login, market.getPrice(), item.getId());
-        userService.replenishBalanceSeller(market.getUser().getLogin(), market.getPrice());
 
         marketService.deleteSlot(market.getId());
 

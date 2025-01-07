@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InventoryService {
@@ -85,8 +86,18 @@ public class InventoryService {
         return 0;
     }
 
+    public Optional<Inventory> getByItemId(String userLogin, Long itemId) {
+        Page<Inventory> allInventory = inventoryRepository.findAllByUser(userLogin, Pageable.unpaged())
+                .orElseThrow(ResourceNotFoundException::new);
+        List<Inventory> allInventoryData = allInventory.getContent();
+        return allInventoryData.stream().filter(inventory -> {
+            return inventory.getItem().getId().equals(itemId);
+        }).findFirst();
+    }
+
     public List<ItemResponse> getAllItems(String userLogin, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = page != -1 ? PageRequest.of(page, size) : Pageable.unpaged();
+
         Page<Inventory> allInventory = inventoryRepository.findAllByUser(userLogin, pageable)
                 .orElseThrow(ResourceNotFoundException::new);
         List<Inventory> allInventoryData = allInventory.getContent();
@@ -97,11 +108,40 @@ public class InventoryService {
                     inventory.getItem().getRarity(), inventory.getAmount(),
                     shopRepository.getGameShopPictureByGameName(inventory.getItem().getGame().getName())));
         });
+
         return itemResponses;
     }
 
     public void saveItemToCustomer(User user, Item item) {
-        inventoryRepository.save(new Inventory(user, item, 0));
+        Pageable pageable = Pageable.unpaged();
+        Page<Inventory> allInventory = inventoryRepository.findAllByUser(user.getLogin(), pageable)
+                .orElseThrow(ResourceNotFoundException::new);
+        List<Inventory> allInventoryData = allInventory.getContent();
+
+        allInventoryData.stream().filter(inventory -> inventory.getItem().getId().equals(item.getId())).findFirst()
+                .ifPresentOrElse(inventory -> {
+                    inventory.setAmount(inventory.getAmount() + 1);
+                    inventoryRepository.save(inventory);
+                }, () -> {
+                    inventoryRepository.save(new Inventory(user, item, 1));
+                });
+    }
+
+    public void removeItemFromSeller(User user, Item item) {
+        Pageable pageable = Pageable.unpaged();
+        Page<Inventory> allInventory = inventoryRepository.findAllByUser(user.getLogin(), pageable)
+                .orElseThrow(ResourceNotFoundException::new);
+        List<Inventory> allInventoryData = allInventory.getContent();
+
+        allInventoryData.stream().filter(inventory -> inventory.getItem().getId().equals(item.getId())).findFirst()
+                .ifPresent(inventory -> {
+                    if (inventory.getAmount() == 1) {
+                        inventoryRepository.delete(inventory);
+                    } else {
+                        inventory.setAmount(inventory.getAmount() - 1);
+                        inventoryRepository.save(inventory);
+                    }
+                });
     }
 
 }
