@@ -83,26 +83,6 @@ BEFORE INSERT ON market
 FOR EACH ROW
 EXECUTE FUNCTION unique_item_in_marketplace();
 
-CREATE OR REPLACE FUNCTION check_sufficient_balance() RETURNS TRIGGER AS $$
-DECLARE
-    game_price REAL;
-    user_balance REAL;
-BEGIN
-    SELECT price INTO game_price FROM shop WHERE game_id = NEW.game_id;
-    SELECT balance INTO user_balance FROM Wallets WHERE id = (SELECT wallet_id FROM Users WHERE login = NEW.user_login);
-    
-    IF user_balance < game_price THEN
-        RAISE EXCEPTION 'Insufficient funds to purchase this game';
-    END IF;
-    
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER check_balance_before_add_to_library
-BEFORE INSERT ON Library
-FOR EACH ROW
-EXECUTE FUNCTION check_sufficient_balance();
 
 CREATE OR REPLACE FUNCTION deduct_balance_after_purchase() RETURNS TRIGGER AS $$
 DECLARE

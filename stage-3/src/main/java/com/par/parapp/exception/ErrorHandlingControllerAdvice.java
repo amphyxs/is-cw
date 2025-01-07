@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.par.parapp.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.hibernate.exception.GenericJDBCException;
+import org.postgresql.util.PSQLException;
 
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLException;
@@ -54,6 +57,28 @@ public class ErrorHandlingControllerAdvice {
     public ResponseEntity<ErrorResponse> handleMismatchedInputException(MismatchedInputException e) {
         ErrorResponse errorResponse = new ErrorResponse("Неверный формат, поле: " + e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ResponseEntity<ErrorResponse> handleJpaSystemException(JpaSystemException e) {
+        String message = "Ошибка базы данных: " + extractDatabaseErrorMessage(e);
+        ErrorResponse errorResponse = new ErrorResponse(message);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private String extractDatabaseErrorMessage(Throwable e) {
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            // Проверяем, связано ли исключение с PostgreSQL
+            if (cause instanceof PSQLException) {
+                PSQLException psqlException = (PSQLException) cause;
+                if (psqlException.getServerErrorMessage() != null) {
+                    return psqlException.getServerErrorMessage().getMessage();
+                }
+            }
+            cause = cause.getCause(); // Пробуем получить более глубокую причину
+        }
+        return e.getMessage();
     }
 
     @ExceptionHandler(Exception.class)
