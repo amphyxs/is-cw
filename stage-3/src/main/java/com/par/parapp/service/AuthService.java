@@ -63,10 +63,10 @@ public class AuthService {
 
     public User saveUser(String login, String password, String email, Boolean isDev) {
 
-        if (userRepository.existsByLogin(login))
+        if (Boolean.TRUE.equals(userRepository.existsByLogin(login)))
             throw new ResourceAlreadyExist("Этот логин уже занят. Попробуйте другой");
 
-        if (userRepository.existsByEmail(email))
+        if (Boolean.TRUE.equals(userRepository.existsByEmail(email)))
             throw new ResourceAlreadyExist("Эта электронная почта уже занята. Попробуйте другую");
 
         User user = new User(login, "Не в сети",
@@ -75,9 +75,18 @@ public class AuthService {
 
         Set<Role> roles = new HashSet<>();
 
+        if (Boolean.TRUE.equals(isDev)) {
+            Role devRole = roleRepository
+                    .findByName(ERole.ROLE_DEV)
+                    .orElseThrow(ResourceNotFoundException::new);
+
+            roles.add(devRole);
+        }
+
         Role userRole = roleRepository
-                .findByName(isDev ? ERole.ROLE_DEV : ERole.ROLE_USER)
+                .findByName(ERole.ROLE_USER)
                 .orElseThrow(ResourceNotFoundException::new);
+
         roles.add(userRole);
 
         Wallet wallet = new Wallet(0.0);
