@@ -20,5 +20,16 @@ services:
     network_mode: host
     env_file: ".env"
 
+  varnish:
+    image: varnish:latest
+    container_name: varnish_cache
+    network_mode: host
+    # depends_on:
+    #   - app
+    volumes:
+      - ./default.vcl:/etc/varnish/default.vcl:ro
+    command: >
+      varnishd -F -f /etc/varnish/default.vcl -s malloc,32m -a http=:18125
+
 volumes:
   parapp_db1:
