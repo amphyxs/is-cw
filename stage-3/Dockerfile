@@ -7,5 +7,5 @@ RUN mvn clean install -U
 FROM openjdk:21
 COPY --from=build /app/target/parapp-0.0.1-SNAPSHOT.jar /app/app.jar
 WORKDIR /app
-EXPOSE 18123
+EXPOSE 18124
 CMD ["java", "-jar", "app.jar"]

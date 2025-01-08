@@ -34,6 +34,8 @@ public class User {
     @OneToOne
     private Wallet wallet;
 
+    private Long telegramId;
+
     public User() {
     }
 
@@ -116,5 +118,14 @@ public class User {
     public void setIsTutorialCompleted(Boolean isTutorialCompleted) {
         this.isTutorialCompleted = isTutorialCompleted;
     }
+
+    public Long getTelegramId() {
+        return telegramId;
+    }
+
+    public void setTelegramId(Long telegramId) {
+        this.telegramId = telegramId;
+    }
+
 
 }

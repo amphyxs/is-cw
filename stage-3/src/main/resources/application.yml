@@ -39,3 +39,8 @@ server:
 
 app:
   jwtExpirationMs: 86400000
+
+
+bot:
+  token: ${BOT_TOKEN:token}
+  username: ${BOT_USERNAME:default}

@@ -14,7 +14,8 @@ CREATE TABLE users
     last_login_date   DATE,
     email             VARCHAR(64)  NOT NULL,
     registration_date DATE         NOT NULL,
-    wallet_id         INTEGER REFERENCES wallets ON DELETE CASCADE ON UPDATE CASCADE
+    wallet_id         INTEGER REFERENCES wallets ON DELETE CASCADE ON UPDATE CASCADE,
+    telegram_id       BIGINT
 );
 
 
