@@ -39,12 +39,14 @@ public class User {
     public User() {
     }
 
-    public User(String login, String status, String password, String email, LocalDate registrationDate) {
+    public User(String login, String status, String password, String email, LocalDate registrationDate,
+            Long telegramId) {
         this.login = login;
         this.status = status;
         this.password = password;
         this.email = email;
         this.registrationDate = registrationDate;
+        this.telegramId = telegramId;
     }
 
     public String getLogin() {
@@ -126,6 +128,5 @@ public class User {
     public void setTelegramId(Long telegramId) {
         this.telegramId = telegramId;
     }
-
 
 }

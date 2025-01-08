@@ -23,7 +23,7 @@ services:
   varnish:
     image: varnish:latest
     container_name: varnish_cache
-    profiles: [storage]
+    profiles: [main, storage]
     network_mode: host
     # depends_on:
     #   - app

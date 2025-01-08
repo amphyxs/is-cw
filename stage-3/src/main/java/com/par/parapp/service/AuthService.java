@@ -71,7 +71,7 @@ public class AuthService {
 
         User user = new User(login, "Не в сети",
                 passwordEncoder.encode(password),
-                email, LocalDate.now());
+                email, LocalDate.now(), null);
 
         Set<Role> roles = new HashSet<>();
 

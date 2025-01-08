@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class AchievementRequest {
-    private Long userId;
+    private String userId;
     private String achievementType;
 }

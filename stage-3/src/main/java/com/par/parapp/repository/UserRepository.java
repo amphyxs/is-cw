@@ -56,6 +56,6 @@ public interface UserRepository extends JpaRepository<User, String> {
         void updateIsTutorialCompleted(@Param("user_login") String userLogin,
                         @Param("is_tutorial_completed") Boolean isTutorialCompleted);
 
-        @Query("SELECT u.telegramId FROM User u WHERE u.id = :userId")
-        Long findTelegramIdByUserId(@Param("userId") Long userId);
+        @Query("SELECT u.telegramId FROM User u WHERE u.login = :userLogin")
+        Long findTelegramIdByUserId(@Param("userLogin") String userLogin);
 }
