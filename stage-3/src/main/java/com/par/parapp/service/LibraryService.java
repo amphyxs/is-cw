@@ -136,7 +136,7 @@ public class LibraryService {
         var gameTransaction = transactionRepository.getSuccessTransactionForBuyingGameOfUser(buyerLogin, gameId).get();
         var bonusesTransaction = transactionRepository
                 .getSuccessTransactionForBuyingGameWithBonusesOfUser(buyerLogin, gameId).get();
-        var libraryItem = libraryRepository.getAllFromLibraryByGameNameFilter(gameName, buyerLogin).get().getFirst();
+        var libraryItem = libraryRepository.getAllFromLibraryByGameNameFilter(gameName, buyerLogin).get().get(0);
         var user = userRepository.getReferenceById(buyerLogin);
 
         if (bonusesTransaction.getAmount() > 0) {
