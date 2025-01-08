@@ -31,5 +31,38 @@ services:
     command: >
       varnishd -F -f /etc/varnish/default.vcl -s malloc,32m -a http=:18125
 
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    profiles: [sonarqube]
+    ports:
+      - "9000:9000"
+    env_file: "sonarqube.env"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  sonarqube-db:
+    image: postgres:latest
+    container_name: sonar_db
+    profiles: [sonarqube]
+    env_file: "sonarqube.env"
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+
+  sonarqube-check-app:
+    build:
+      dockerfile: sonarqube.Dockerfile
+    profiles: [sonarqube]
+    depends_on:
+      - sonarqube
+    network_mode: host
+    env_file: "sonarqube.env"
+
 volumes:
   parapp_db1:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  sonar_db_data:
