@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "achievements", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "name")
+        @UniqueConstraint(columnNames = { "name", "user_login" })
 })
 public class Achievement {
     @Id
