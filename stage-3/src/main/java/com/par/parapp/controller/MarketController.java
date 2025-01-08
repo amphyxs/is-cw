@@ -70,9 +70,12 @@ public class MarketController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getAllSlots(@RequestParam String gameName,
+    public ResponseEntity<Object> getAllSlots(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam String gameName,
             @RequestParam String itemName) {
-        return ResponseEntity.ok(marketService.getEntriesByGameNameAndItemName(itemName, gameName));
+        return ResponseEntity.ok(marketService.getEntriesByGameNameAndItemName(itemName, gameName, page, size));
 
     }
 

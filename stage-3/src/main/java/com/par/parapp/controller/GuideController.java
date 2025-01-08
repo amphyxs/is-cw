@@ -35,7 +35,7 @@ public class GuideController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getGamesBySelectedGame(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Object> getGuidesBySelectedGame(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam String selectedGame) {
 

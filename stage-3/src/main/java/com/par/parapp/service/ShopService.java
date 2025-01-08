@@ -8,6 +8,10 @@ import com.par.parapp.model.Game;
 import com.par.parapp.model.Genre;
 import com.par.parapp.model.Shop;
 import com.par.parapp.repository.ShopRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,13 +35,15 @@ public class ShopService {
 
     }
 
-    public List<ShopDataResponse> getEntriesByGameNameAndGenres(String gameName, List<String> genresReq) {
+    public Page<ShopDataResponse> getEntriesByGameNameAndGenres(String gameName, List<String> genresReq, int page,
+            int size) {
         List<Shop> allShopEntries;
-        if (gameName.isEmpty())
+        if (gameName.isEmpty()) {
             allShopEntries = shopRepository.getAllFromShop().orElseThrow(ResourceNotFoundException::new);
-        else
+        } else {
             allShopEntries = shopRepository.getAllFromShopByGameNameFilter(gameName)
                     .orElseThrow(ResourceNotFoundException::new);
+        }
 
         List<ShopDataResponse> shopDataResponses = new ArrayList<>();
 
@@ -53,7 +59,7 @@ public class ShopService {
 
         });
 
-        return shopDataResponses;
+        return new PageImpl<>(shopDataResponses, PageRequest.of(page, size), allShopEntries.size());
     }
 
     public String getGamePicture(String gameName) {

@@ -9,6 +9,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class LibraryService {
         libraryRepository.save(library);
     }
 
-    public List<LibraryDataResponse> getEntriesByGameName(String gameName, String userLogin) {
+    public Page<LibraryDataResponse> getEntriesByGameName(String gameName, String userLogin, int page, int size) {
         List<Library> allLibraryEntries;
         if (gameName == null)
             allLibraryEntries = libraryRepository.getAllFromLibraryByUserLogin(userLogin)
@@ -90,7 +91,7 @@ public class LibraryService {
 
         });
 
-        return libraryDataResponses;
+        return new PageImpl<>(libraryDataResponses, PageRequest.of(page, size), libraryDataResponses.size());
     }
 
     public void enterTheGame(String login, String gameName) {

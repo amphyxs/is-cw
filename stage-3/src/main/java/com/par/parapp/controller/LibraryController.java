@@ -23,15 +23,15 @@ public class LibraryController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getGamesByName(@RequestParam String gameName,
+    public ResponseEntity<Object> getGamesByName(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size, @RequestParam String gameName,
             HttpServletRequest httpServletRequest) {
         String login = authService.getLoginFromToken(httpServletRequest);
 
-        return ResponseEntity.ok(libraryService.getEntriesByGameName(gameName, login));
+        return ResponseEntity.ok(libraryService.getEntriesByGameName(gameName, login, page, size));
     }
 
     @PreAuthorize("hasRole('USER')")
-
     @PatchMapping("{gameName}")
     public ResponseEntity<Object> enterGame(@PathVariable String gameName,
             HttpServletRequest httpServletRequest) {

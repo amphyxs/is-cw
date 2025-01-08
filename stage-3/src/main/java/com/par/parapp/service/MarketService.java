@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.par.parapp.dto.SlotsResponse;
@@ -30,7 +33,7 @@ public class MarketService {
         return marketRepository.getMarketById(id).orElseThrow(ResourceNotFoundException::new);
     }
 
-    public List<SlotsResponse> getEntriesByGameNameAndItemName(String itemName, String gameName) {
+    public Page<SlotsResponse> getEntriesByGameNameAndItemName(String itemName, String gameName, int page, int size) {
         List<Market> marketList;
         if (itemName.isEmpty())
             marketList = marketRepository.getAllSlots().orElseThrow(ResourceNotFoundException::new);
@@ -58,7 +61,7 @@ public class MarketService {
 
         slotsResponses.sort(Comparator.comparing(SlotsResponse::getPrice));
 
-        return slotsResponses;
+        return new PageImpl<>(slotsResponses, PageRequest.of(page, size), slotsResponses.size());
 
     }
 

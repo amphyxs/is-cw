@@ -17,10 +17,11 @@ public class ShopController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getGamesByNameAndGenres(@RequestParam String gameName,
+    public ResponseEntity<Object> getGamesByNameAndGenres(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size, @RequestParam String gameName,
             @RequestParam List<String> genres) {
         return ResponseEntity.ok(shopService.getEntriesByGameNameAndGenres(gameName,
-                genres));
+                genres, page, size));
 
     }
 

@@ -1,21 +1,23 @@
 package com.par.parapp.service;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.par.parapp.dto.GuidesResponse;
 import com.par.parapp.exception.ResourceNotFoundException;
 import com.par.parapp.model.Game;
 import com.par.parapp.model.Guide;
 import com.par.parapp.model.User;
 import com.par.parapp.repository.GuideRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 public class GuideService {
@@ -32,20 +34,21 @@ public class GuideService {
         guideRepository.save(new Guide(user, game, guideText, new Timestamp(System.currentTimeMillis())));
     }
 
-    public List<Guide> getAllGuides(int page, int size) {
+    public Page<Guide> getAllGuides(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return guideRepository.findAll(pageable).getContent();
+
+        return guideRepository.findAll(pageable);
     }
 
-    public List<Guide> getAllGuidesByGameName(String gameName, int page, int size) {
+    public Page<Guide> getAllGuidesByGameName(String gameName, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Guide> guidePage = guideRepository.findByGameName(gameName, pageable)
+
+        return guideRepository.findByGameName(gameName, pageable)
                 .orElseThrow(ResourceNotFoundException::new);
-        return guidePage.getContent();
     }
 
-    public List<GuidesResponse> getGuidesByCondition(String selectedGame, int page, int size) {
-        List<Guide> guideList;
+    public Page<GuidesResponse> getGuidesByCondition(String selectedGame, int page, int size) {
+        Page<Guide> guideList;
         if (selectedGame.isEmpty())
             guideList = getAllGuides(page, size);
         else
@@ -59,6 +62,7 @@ public class GuideService {
                 shopService.getGamePicture(guide.getGame().getName()), guide.getGame().getName())));
         guidesResponses.sort(Comparator.comparing(GuidesResponse::getSendDate));
         Collections.reverse(guidesResponses);
-        return guidesResponses;
+
+        return new PageImpl<>(guidesResponses, PageRequest.of(page, size), guideList.getTotalElements());
     }
 }
