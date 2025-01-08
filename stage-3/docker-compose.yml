@@ -5,7 +5,7 @@ services:
     image: postgres:14
     container_name: parapp_db
     env_file: ".env"
-    profiles: [main]
+    profiles: [main, storage]
     ports:
       - "5432:5432"
     volumes:
@@ -23,6 +23,7 @@ services:
   varnish:
     image: varnish:latest
     container_name: varnish_cache
+    profiles: [storage]
     network_mode: host
     # depends_on:
     #   - app
